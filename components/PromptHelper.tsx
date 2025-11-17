@@ -3,163 +3,163 @@ import { useEffect, useState } from 'react';
 interface PromptSuggestion {
   text: string;
   questionPatterns: string[]; // Specific questions this answers
-  depth?: number; // 1 = initial, 2 = follow-up, 3 = deep reflection
-  category?: string; // For context tracking
+  followsUserResponse?: string[]; // User responses that lead to this prompt
+  category?: string;
 }
 
 const PROMPT_LIBRARY: PromptSuggestion[] = [
   // === TIME OF DAY (Initial) ===
-  { text: 'Morning', questionPatterns: ['morning, midday, or evening', 'what time', 'time of day'], depth: 1, category: 'time' },
-  { text: 'Midday', questionPatterns: ['morning, midday, or evening', 'what time', 'time of day'], depth: 1, category: 'time' },
-  { text: 'Evening', questionPatterns: ['morning, midday, or evening', 'what time', 'time of day'], depth: 1, category: 'time' },
+  { text: 'Morning', questionPatterns: ['morning, midday, or evening', 'what time'], category: 'time' },
+  { text: 'Midday', questionPatterns: ['morning, midday, or evening', 'what time'], category: 'time' },
+  { text: 'Evening', questionPatterns: ['morning, midday, or evening', 'what time'], category: 'time' },
 
-  // === FEELINGS (Initial + Follow-up) ===
-  { text: 'Energized', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
-  { text: 'Tired', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
-  { text: 'Calm', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
-  { text: 'Stressed', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
-  { text: 'Happy', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
-  { text: 'Neutral', questionPatterns: ['how are you feeling', 'how do you feel', 'feeling right now'], depth: 1, category: 'feeling' },
+  // === FEELINGS ===
+  { text: 'Energized', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
+  { text: 'Tired', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
+  { text: 'Calm', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
+  { text: 'Stressed', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
+  { text: 'Happy', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
+  { text: 'Neutral', questionPatterns: ['how are you feeling', 'how do you feel'], category: 'feeling' },
 
-  // === EXERCISE (Progressive depth) ===
-  // Depth 1: Initial question
-  { text: 'Yes, I worked out', questionPatterns: ['did you exercise', 'exercise today', 'work out today'], depth: 1, category: 'exercise' },
-  { text: 'No, rest day', questionPatterns: ['did you exercise', 'exercise today', 'work out today'], depth: 1, category: 'exercise' },
-  { text: 'Light activity', questionPatterns: ['did you exercise', 'exercise today', 'work out today'], depth: 1, category: 'exercise' },
+  // === EXERCISE FLOW ===
+  // Step 1: Did you exercise?
+  { text: 'Yes, I worked out', questionPatterns: ['did you exercise', 'exercise today', 'work out'], category: 'exercise' },
+  { text: 'No, rest day', questionPatterns: ['did you exercise', 'exercise today', 'work out'], category: 'exercise' },
+  { text: 'Light activity', questionPatterns: ['did you exercise', 'exercise today', 'work out'], category: 'exercise' },
 
-  // Depth 2: What kind?
-  { text: 'Walking', questionPatterns: ['what kind', 'type of exercise', 'workout'], depth: 2, category: 'exercise' },
-  { text: 'Running', questionPatterns: ['what kind', 'type of exercise', 'workout'], depth: 2, category: 'exercise' },
-  { text: 'Gym workout', questionPatterns: ['what kind', 'type of exercise', 'workout'], depth: 2, category: 'exercise' },
-  { text: 'Yoga', questionPatterns: ['what kind', 'type of exercise', 'workout'], depth: 2, category: 'exercise' },
-  { text: 'Cycling', questionPatterns: ['what kind', 'type of exercise', 'workout'], depth: 2, category: 'exercise' },
+  // Step 2: What kind? (only if user said yes/they exercised)
+  { text: 'Walking', questionPatterns: ['what kind of exercise', 'what type of workout', 'what did you do for exercise'], followsUserResponse: ['yes', 'worked out', 'exercised', 'light activity'], category: 'exercise' },
+  { text: 'Running', questionPatterns: ['what kind of exercise', 'what type of workout', 'what did you do for exercise'], followsUserResponse: ['yes', 'worked out', 'exercised', 'light activity'], category: 'exercise' },
+  { text: 'Gym workout', questionPatterns: ['what kind of exercise', 'what type of workout', 'what did you do for exercise'], followsUserResponse: ['yes', 'worked out', 'exercised', 'light activity'], category: 'exercise' },
+  { text: 'Yoga', questionPatterns: ['what kind of exercise', 'what type of workout', 'what did you do for exercise'], followsUserResponse: ['yes', 'worked out', 'exercised', 'light activity'], category: 'exercise' },
+  { text: 'Cycling', questionPatterns: ['what kind of exercise', 'what type of workout', 'what did you do for exercise'], followsUserResponse: ['yes', 'worked out', 'exercised', 'light activity'], category: 'exercise' },
 
-  // Depth 3: How did it feel?
-  { text: 'Great, felt energized', questionPatterns: ['how did it feel', 'how was it', 'how did that go'], depth: 3, category: 'exercise' },
-  { text: 'Tired but accomplished', questionPatterns: ['how did it feel', 'how was it', 'how did that go'], depth: 3, category: 'exercise' },
-  { text: 'Challenging today', questionPatterns: ['how did it feel', 'how was it', 'how did that go'], depth: 3, category: 'exercise' },
+  // Step 3: How did it feel? (only if they mentioned a specific exercise type)
+  { text: 'Great, felt energized', questionPatterns: ['how did it feel', 'how did the exercise feel', 'how was your workout'], followsUserResponse: ['walking', 'running', 'gym', 'yoga', 'cycling', 'lifted'], category: 'exercise' },
+  { text: 'Tired but accomplished', questionPatterns: ['how did it feel', 'how did the exercise feel', 'how was your workout'], followsUserResponse: ['walking', 'running', 'gym', 'yoga', 'cycling', 'lifted'], category: 'exercise' },
+  { text: 'Challenging today', questionPatterns: ['how did it feel', 'how did the exercise feel', 'how was your workout'], followsUserResponse: ['walking', 'running', 'gym', 'yoga', 'cycling', 'lifted'], category: 'exercise' },
 
-  // === READING (Progressive depth) ===
-  // Depth 1: Did you read?
-  { text: 'Yes, I read today', questionPatterns: ['did you read', 'read today', 'reading'], depth: 1, category: 'reading' },
-  { text: 'No reading today', questionPatterns: ['did you read', 'read today', 'reading'], depth: 1, category: 'reading' },
-  { text: 'Just a few pages', questionPatterns: ['did you read', 'read today', 'reading'], depth: 1, category: 'reading' },
+  // === READING FLOW ===
+  // Step 1: Did you read?
+  { text: 'Yes, I read today', questionPatterns: ['did you read'], category: 'reading' },
+  { text: 'No reading today', questionPatterns: ['did you read'], category: 'reading' },
+  { text: 'Just a few pages', questionPatterns: ['did you read'], category: 'reading' },
 
-  // Depth 2: What are you reading?
-  { text: 'Fiction novel', questionPatterns: ['what are you reading', 'what book', 'reading currently'], depth: 2, category: 'reading' },
-  { text: 'Non-fiction', questionPatterns: ['what are you reading', 'what book', 'reading currently'], depth: 2, category: 'reading' },
-  { text: 'Technical book', questionPatterns: ['what are you reading', 'what book', 'reading currently'], depth: 2, category: 'reading' },
+  // Step 2: What are you reading? (if they said yes)
+  { text: 'Fiction novel', questionPatterns: ['what are you reading', 'what book'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
+  { text: 'Non-fiction', questionPatterns: ['what are you reading', 'what book'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
+  { text: 'Technical book', questionPatterns: ['what are you reading', 'what book'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
 
-  // Depth 2: How long?
-  { text: 'About 30 minutes', questionPatterns: ['how long', 'how much time'], depth: 2, category: 'reading' },
-  { text: 'An hour or so', questionPatterns: ['how long', 'how much time'], depth: 2, category: 'reading' },
-  { text: 'Quick 10-15 minutes', questionPatterns: ['how long', 'how much time'], depth: 2, category: 'reading' },
+  // Step 2 Alternative: How long?
+  { text: 'About 30 minutes', questionPatterns: ['how long did you read', 'how much time'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
+  { text: 'An hour or so', questionPatterns: ['how long did you read', 'how much time'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
+  { text: 'Quick 10-15 minutes', questionPatterns: ['how long did you read', 'how much time'], followsUserResponse: ['yes', 'read', 'pages', 'chapter'], category: 'reading' },
 
-  // Depth 3: Insights/quotes?
-  { text: 'Great insights', questionPatterns: ['standout', 'insights', 'quotes', 'thoughts on'], depth: 3, category: 'reading' },
-  { text: 'One powerful quote', questionPatterns: ['standout', 'insights', 'quotes', 'thoughts on'], depth: 3, category: 'reading' },
-  { text: 'Nothing stood out', questionPatterns: ['standout', 'insights', 'quotes', 'thoughts on'], depth: 3, category: 'reading' },
-  { text: 'Really engaging', questionPatterns: ['standout', 'insights', 'quotes', 'thoughts on'], depth: 3, category: 'reading' },
+  // Step 3: Insights? (if they mentioned a book or reading time)
+  { text: 'Great insights', questionPatterns: ['any standout', 'any insights', 'any quotes', 'what did you think'], followsUserResponse: ['fiction', 'non-fiction', 'technical', 'minutes', 'hour', 'book'], category: 'reading' },
+  { text: 'One powerful quote', questionPatterns: ['any standout', 'any insights', 'any quotes', 'what did you think'], followsUserResponse: ['fiction', 'non-fiction', 'technical', 'minutes', 'hour', 'book'], category: 'reading' },
+  { text: 'Nothing stood out', questionPatterns: ['any standout', 'any insights', 'any quotes', 'what did you think'], followsUserResponse: ['fiction', 'non-fiction', 'technical', 'minutes', 'hour', 'book'], category: 'reading' },
+  { text: 'Really engaging', questionPatterns: ['any standout', 'any insights', 'any quotes', 'what did you think'], followsUserResponse: ['fiction', 'non-fiction', 'technical', 'minutes', 'hour', 'book'], category: 'reading' },
 
-  // === ENTERTAINMENT (Progressive depth) ===
-  // Depth 1: Watch anything?
-  { text: 'Yes, watched something', questionPatterns: ['watch anything', 'watch', 'movie', 'tv'], depth: 1, category: 'entertainment' },
-  { text: 'No, nothing today', questionPatterns: ['watch anything', 'watch', 'movie', 'tv'], depth: 1, category: 'entertainment' },
+  // === ENTERTAINMENT FLOW ===
+  // Step 1: Watch anything?
+  { text: 'Yes, watched something', questionPatterns: ['watch anything', 'did you watch'], category: 'entertainment' },
+  { text: 'No, nothing today', questionPatterns: ['watch anything', 'did you watch'], category: 'entertainment' },
 
-  // Depth 2: What did you watch?
-  { text: 'A movie', questionPatterns: ['what did you watch', 'what movie', 'what show'], depth: 2, category: 'entertainment' },
-  { text: 'TV series episode', questionPatterns: ['what did you watch', 'what movie', 'what show'], depth: 2, category: 'entertainment' },
-  { text: 'Documentary', questionPatterns: ['what did you watch', 'what movie', 'what show'], depth: 2, category: 'entertainment' },
+  // Step 2: What did you watch? (if yes)
+  { text: 'A movie', questionPatterns: ['what did you watch'], followsUserResponse: ['yes', 'watched', 'something'], category: 'entertainment' },
+  { text: 'TV series episode', questionPatterns: ['what did you watch'], followsUserResponse: ['yes', 'watched', 'something'], category: 'entertainment' },
+  { text: 'Documentary', questionPatterns: ['what did you watch'], followsUserResponse: ['yes', 'watched', 'something'], category: 'entertainment' },
 
-  // Depth 3: What did you think?
-  { text: 'Really enjoyed it', questionPatterns: ['what did you think', 'thoughts', 'how was it'], depth: 3, category: 'entertainment' },
-  { text: 'It was okay', questionPatterns: ['what did you think', 'thoughts', 'how was it'], depth: 3, category: 'entertainment' },
-  { text: 'Not my favorite', questionPatterns: ['what did you think', 'thoughts', 'how was it'], depth: 3, category: 'entertainment' },
-  { text: 'Thought-provoking', questionPatterns: ['what did you think', 'thoughts', 'how was it'], depth: 3, category: 'entertainment' },
+  // Step 3: What did you think? (if they mentioned what they watched)
+  { text: 'Really enjoyed it', questionPatterns: ['what did you think', 'thoughts on', 'how was it'], followsUserResponse: ['movie', 'series', 'documentary', 'show', 'film'], category: 'entertainment' },
+  { text: 'It was okay', questionPatterns: ['what did you think', 'thoughts on', 'how was it'], followsUserResponse: ['movie', 'series', 'documentary', 'show', 'film'], category: 'entertainment' },
+  { text: 'Not my favorite', questionPatterns: ['what did you think', 'thoughts on', 'how was it'], followsUserResponse: ['movie', 'series', 'documentary', 'show', 'film'], category: 'entertainment' },
+  { text: 'Thought-provoking', questionPatterns: ['what did you think', 'thoughts on', 'how was it'], followsUserResponse: ['movie', 'series', 'documentary', 'show', 'film'], category: 'entertainment' },
 
-  // === WORK (Progressive depth) ===
-  // Depth 1: How was work?
-  { text: 'Great day', questionPatterns: ['how was work', 'work today', 'work go'], depth: 1, category: 'work' },
-  { text: 'Productive', questionPatterns: ['how was work', 'work today', 'work go'], depth: 1, category: 'work' },
-  { text: 'Challenging', questionPatterns: ['how was work', 'work today', 'work go'], depth: 1, category: 'work' },
-  { text: 'Normal day', questionPatterns: ['how was work', 'work today', 'work go'], depth: 1, category: 'work' },
-  { text: 'Stressful', questionPatterns: ['how was work', 'work today', 'work go'], depth: 1, category: 'work' },
+  // === WORK FLOW ===
+  // Step 1: How was work?
+  { text: 'Great day', questionPatterns: ['how was work'], category: 'work' },
+  { text: 'Productive', questionPatterns: ['how was work'], category: 'work' },
+  { text: 'Challenging', questionPatterns: ['how was work'], category: 'work' },
+  { text: 'Normal day', questionPatterns: ['how was work'], category: 'work' },
+  { text: 'Stressful', questionPatterns: ['how was work'], category: 'work' },
 
-  // Depth 2: Highlights or lowlights?
-  { text: 'Completed a big project', questionPatterns: ['highlights', 'lowlights', 'accomplish', 'frustrate'], depth: 2, category: 'work' },
-  { text: 'Good meetings', questionPatterns: ['highlights', 'lowlights', 'accomplish', 'frustrate'], depth: 2, category: 'work' },
-  { text: 'Made progress on key tasks', questionPatterns: ['highlights', 'lowlights', 'accomplish', 'frustrate'], depth: 2, category: 'work' },
-  { text: 'Some setbacks', questionPatterns: ['highlights', 'lowlights', 'accomplish', 'frustrate'], depth: 2, category: 'work' },
+  // Step 2: Highlights or challenges? (after they described work)
+  { text: 'Completed a big project', questionPatterns: ['any highlights', 'accomplish at work', 'what frustrated'], followsUserResponse: ['great', 'productive', 'challenging', 'normal', 'stressful'], category: 'work' },
+  { text: 'Good meetings', questionPatterns: ['any highlights', 'accomplish at work', 'what frustrated'], followsUserResponse: ['great', 'productive', 'challenging', 'normal', 'stressful'], category: 'work' },
+  { text: 'Made progress on key tasks', questionPatterns: ['any highlights', 'accomplish at work', 'what frustrated'], followsUserResponse: ['great', 'productive', 'challenging', 'normal', 'stressful'], category: 'work' },
+  { text: 'Some setbacks', questionPatterns: ['any highlights', 'accomplish at work', 'what frustrated'], followsUserResponse: ['great', 'productive', 'challenging', 'normal', 'stressful'], category: 'work' },
 
-  // Depth 3: What did you learn?
-  { text: 'New technical skill', questionPatterns: ['what did you learn', 'learn', 'takeaway'], depth: 3, category: 'work' },
-  { text: 'Better approach to problem', questionPatterns: ['what did you learn', 'learn', 'takeaway'], depth: 3, category: 'work' },
-  { text: 'Nothing major', questionPatterns: ['what did you learn', 'learn', 'takeaway'], depth: 3, category: 'work' },
+  // Step 3: What did you learn? (after highlights/challenges)
+  { text: 'New technical skill', questionPatterns: ['what did you learn', 'any takeaways'], followsUserResponse: ['completed', 'project', 'meetings', 'progress', 'setbacks', 'tasks'], category: 'work' },
+  { text: 'Better approach to problem', questionPatterns: ['what did you learn', 'any takeaways'], followsUserResponse: ['completed', 'project', 'meetings', 'progress', 'setbacks', 'tasks'], category: 'work' },
+  { text: 'Nothing major', questionPatterns: ['what did you learn', 'any takeaways'], followsUserResponse: ['completed', 'project', 'meetings', 'progress', 'setbacks', 'tasks'], category: 'work' },
 
-  // === KAREN (Wife - Progressive depth) ===
-  // Depth 1: Anything fun with Karen?
-  { text: 'Quality time together', questionPatterns: ['anything fun with karen', 'karen', 'do with karen'], depth: 1, category: 'karen' },
-  { text: 'Nothing special', questionPatterns: ['anything fun with karen', 'karen', 'do with karen'], depth: 1, category: 'karen' },
-  { text: 'Had a nice conversation', questionPatterns: ['anything fun with karen', 'karen', 'do with karen'], depth: 1, category: 'karen' },
-  { text: 'Watched something together', questionPatterns: ['anything fun with karen', 'karen', 'do with karen'], depth: 1, category: 'karen' },
+  // === KAREN (Wife) ===
+  // Step 1: Anything with Karen?
+  { text: 'Quality time together', questionPatterns: ['anything fun with karen', 'do with karen'], category: 'karen' },
+  { text: 'Nothing special', questionPatterns: ['anything fun with karen', 'do with karen'], category: 'karen' },
+  { text: 'Had a nice conversation', questionPatterns: ['anything fun with karen', 'do with karen'], category: 'karen' },
+  { text: 'Watched something together', questionPatterns: ['anything fun with karen', 'do with karen'], category: 'karen' },
 
-  // Depth 2: Special moments?
-  { text: 'Had a sweet moment', questionPatterns: ['special moments', 'memorable', 'stand out'], depth: 2, category: 'karen' },
-  { text: 'Good laugh together', questionPatterns: ['special moments', 'memorable', 'stand out'], depth: 2, category: 'karen' },
-  { text: 'Deep conversation', questionPatterns: ['special moments', 'memorable', 'stand out'], depth: 2, category: 'karen' },
+  // Step 2: Special moments? (if they did something)
+  { text: 'Had a sweet moment', questionPatterns: ['any special moments', 'anything memorable'], followsUserResponse: ['quality time', 'conversation', 'watched', 'together'], category: 'karen' },
+  { text: 'Good laugh together', questionPatterns: ['any special moments', 'anything memorable'], followsUserResponse: ['quality time', 'conversation', 'watched', 'together'], category: 'karen' },
+  { text: 'Deep conversation', questionPatterns: ['any special moments', 'anything memorable'], followsUserResponse: ['quality time', 'conversation', 'watched', 'together'], category: 'karen' },
 
-  // === SYDNEY (Daughter - Progressive depth) ===
-  // Depth 1: What did you do with Sydney?
-  { text: 'Played together', questionPatterns: ['with sydney', 'sydney', 'do with sydney'], depth: 1, category: 'sydney' },
-  { text: 'Helped with homework', questionPatterns: ['with sydney', 'sydney', 'do with sydney'], depth: 1, category: 'sydney' },
-  { text: 'Had quality time', questionPatterns: ['with sydney', 'sydney', 'do with sydney'], depth: 1, category: 'sydney' },
-  { text: 'Nothing today', questionPatterns: ['with sydney', 'sydney', 'do with sydney'], depth: 1, category: 'sydney' },
+  // === SYDNEY (Daughter) ===
+  // Step 1: What with Sydney?
+  { text: 'Played together', questionPatterns: ['do with sydney', 'anything with sydney'], category: 'sydney' },
+  { text: 'Helped with homework', questionPatterns: ['do with sydney', 'anything with sydney'], category: 'sydney' },
+  { text: 'Had quality time', questionPatterns: ['do with sydney', 'anything with sydney'], category: 'sydney' },
+  { text: 'Nothing today', questionPatterns: ['do with sydney', 'anything with sydney'], category: 'sydney' },
 
-  // Depth 2: Funny or sweet moments?
-  { text: 'She made me laugh', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'sydney' },
-  { text: 'Sweet conversation', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'sydney' },
-  { text: 'Proud parent moment', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'sydney' },
+  // Step 2: Moments? (if they did something)
+  { text: 'She made me laugh', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'homework', 'quality time', 'together'], category: 'sydney' },
+  { text: 'Sweet conversation', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'homework', 'quality time', 'together'], category: 'sydney' },
+  { text: 'Proud parent moment', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'homework', 'quality time', 'together'], category: 'sydney' },
 
-  // === DAXTON (Son - Progressive depth) ===
-  // Depth 1: What did you do with Daxton?
-  { text: 'Played together', questionPatterns: ['with daxton', 'daxton', 'do with daxton'], depth: 1, category: 'daxton' },
-  { text: 'Read books', questionPatterns: ['with daxton', 'daxton', 'do with daxton'], depth: 1, category: 'daxton' },
-  { text: 'Had quality time', questionPatterns: ['with daxton', 'daxton', 'do with daxton'], depth: 1, category: 'daxton' },
-  { text: 'Nothing today', questionPatterns: ['with daxton', 'daxton', 'do with daxton'], depth: 1, category: 'daxton' },
+  // === DAXTON (Son) ===
+  // Step 1: What with Daxton?
+  { text: 'Played together', questionPatterns: ['do with daxton', 'anything with daxton'], category: 'daxton' },
+  { text: 'Read books', questionPatterns: ['do with daxton', 'anything with daxton'], category: 'daxton' },
+  { text: 'Had quality time', questionPatterns: ['do with daxton', 'anything with daxton'], category: 'daxton' },
+  { text: 'Nothing today', questionPatterns: ['do with daxton', 'anything with daxton'], category: 'daxton' },
 
-  // Depth 2: Funny or sweet moments?
-  { text: 'He made me smile', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'daxton' },
-  { text: 'Sweet conversation', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'daxton' },
-  { text: 'Proud parent moment', questionPatterns: ['funny', 'sweet moments', 'memorable'], depth: 2, category: 'daxton' },
+  // Step 2: Moments? (if they did something)
+  { text: 'He made me smile', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'books', 'quality time', 'together'], category: 'daxton' },
+  { text: 'Sweet conversation', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'books', 'quality time', 'together'], category: 'daxton' },
+  { text: 'Proud parent moment', questionPatterns: ['any funny', 'any sweet moments', 'anything memorable'], followsUserResponse: ['played', 'books', 'quality time', 'together'], category: 'daxton' },
 
   // === GRATITUDE ===
-  { text: 'My family', questionPatterns: ['grateful for', 'gratitude', 'thankful'], depth: 1, category: 'gratitude' },
-  { text: 'My health', questionPatterns: ['grateful for', 'gratitude', 'thankful'], depth: 1, category: 'gratitude' },
-  { text: 'Small moments', questionPatterns: ['grateful for', 'gratitude', 'small pleasures'], depth: 1, category: 'gratitude' },
-  { text: 'Today went well', questionPatterns: ['grateful for', 'gratitude', 'thankful'], depth: 1, category: 'gratitude' },
+  { text: 'My family', questionPatterns: ['grateful for', 'what are you thankful'], category: 'gratitude' },
+  { text: 'My health', questionPatterns: ['grateful for', 'what are you thankful'], category: 'gratitude' },
+  { text: 'Small moments', questionPatterns: ['grateful for', 'small pleasures'], category: 'gratitude' },
+  { text: 'Today went well', questionPatterns: ['grateful for', 'what are you thankful'], category: 'gratitude' },
 
   // === GOALS ===
-  { text: 'Made progress', questionPatterns: ['progress on', 'goals', 'focus on tomorrow'], depth: 1, category: 'goals' },
-  { text: 'Stayed consistent', questionPatterns: ['progress on', 'goals', 'focus on tomorrow'], depth: 1, category: 'goals' },
-  { text: 'Need to refocus', questionPatterns: ['progress on', 'goals', 'focus on tomorrow'], depth: 1, category: 'goals' },
+  { text: 'Made progress', questionPatterns: ['progress on', 'any goals', 'focus on tomorrow'], category: 'goals' },
+  { text: 'Stayed consistent', questionPatterns: ['progress on', 'any goals', 'focus on tomorrow'], category: 'goals' },
+  { text: 'Need to refocus', questionPatterns: ['progress on', 'any goals', 'focus on tomorrow'], category: 'goals' },
 
   // === SIGNIFICANT MOMENTS ===
-  { text: 'A conversation that stood out', questionPatterns: ['significant moments', 'most significant', 'stood out'], depth: 1 },
-  { text: 'Something unexpected', questionPatterns: ['significant moments', 'most significant', 'stood out', 'surprised'], depth: 1 },
-  { text: 'A small victory', questionPatterns: ['significant moments', 'most significant', 'stood out', 'accomplish'], depth: 1 },
-  { text: 'Nothing major', questionPatterns: ['significant moments', 'most significant', 'stood out'], depth: 1 },
+  { text: 'A conversation that stood out', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
+  { text: 'Something unexpected', questionPatterns: ['most significant', 'what stood out today', 'anything surprise'], category: 'moments' },
+  { text: 'A small victory', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
+  { text: 'Nothing major', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
 
   // === CHALLENGES ===
-  { text: 'A difficult situation', questionPatterns: ['challenges', 'difficult', 'struggle'], depth: 1 },
-  { text: 'Work pressure', questionPatterns: ['challenges', 'difficult', 'struggle'], depth: 1 },
-  { text: 'Time management', questionPatterns: ['challenges', 'difficult', 'struggle'], depth: 1 },
-  { text: 'No major challenges', questionPatterns: ['challenges', 'difficult', 'struggle'], depth: 1 },
+  { text: 'A difficult situation', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
+  { text: 'Work pressure', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
+  { text: 'Time management', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
+  { text: 'No major challenges', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
 
-  // === GENERIC (Last resort - very low priority) ===
-  { text: 'Yes', questionPatterns: ['?'], depth: 1 },
-  { text: 'No', questionPatterns: ['?'], depth: 1 },
-  { text: 'Not really', questionPatterns: ['?'], depth: 1 },
-  { text: 'Sort of', questionPatterns: ['?'], depth: 1 },
+  // === GENERIC (Last resort) ===
+  { text: 'Yes', questionPatterns: ['?'] },
+  { text: 'No', questionPatterns: ['?'] },
+  { text: 'Not really', questionPatterns: ['?'] },
+  { text: 'Sort of', questionPatterns: ['?'] },
 ];
 
 interface Message {
@@ -168,7 +168,7 @@ interface Message {
 }
 
 interface PromptHelperProps {
-  messages: Message[]; // Full conversation history
+  messages: Message[];
   onSelectPrompt: (text: string) => void;
 }
 
@@ -187,37 +187,54 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
       return;
     }
 
-    const questionLower = lastAssistantMessage.content.toLowerCase();
+    // Get the user's last response (to check context)
+    const lastUserMessage = messages
+      .slice()
+      .reverse()
+      .find(m => m.role === 'user');
 
-    // Analyze conversation history to understand depth
-    const conversationState = analyzeConversationState(messages);
+    const questionLower = lastAssistantMessage.content.toLowerCase();
+    const userResponseLower = lastUserMessage?.content.toLowerCase() || '';
 
     console.log('=== PROMPT HELPER DEBUG ===');
     console.log('AI Question:', lastAssistantMessage.content);
-    console.log('Topics Discussed:', Array.from(conversationState.topicsDiscussed));
-    console.log('Depth by Category:', Object.fromEntries(conversationState.depthByCategory));
-    console.log('Last 5 messages:', messages.slice(-5).map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })));
+    console.log('User Last Response:', lastUserMessage?.content || 'none');
 
-    // Find prompts that match the specific question being asked
+    // Score each prompt suggestion
     const scoredMatches = PROMPT_LIBRARY.map(prompt => {
       let score = 0;
 
-      // Check if any question pattern matches the current AI question
+      // Check if question pattern matches the AI's current question
+      let patternMatched = false;
       prompt.questionPatterns.forEach(pattern => {
         if (questionLower.includes(pattern.toLowerCase())) {
-          // Exact match to specific question = high score
+          // Base score for pattern match
           score += pattern.length * 100;
-
-          // Bonus for matching the conversation depth
-          if (prompt.category && conversationState.topicsDiscussed.has(prompt.category)) {
-            const depthLevel = conversationState.depthByCategory.get(prompt.category) || 1;
-            // If we're at the right depth level, huge bonus
-            if (prompt.depth === depthLevel) {
-              score += 1000;
-            }
-          }
+          patternMatched = true;
         }
       });
+
+      // If this prompt requires a specific user response context, check for it
+      if (patternMatched && prompt.followsUserResponse && userResponseLower) {
+        let contextMatched = false;
+        prompt.followsUserResponse.forEach(responseKeyword => {
+          if (userResponseLower.includes(responseKeyword.toLowerCase())) {
+            // HUGE bonus if user's response matches the expected context
+            score += 2000;
+            contextMatched = true;
+          }
+        });
+
+        // If pattern matched but user response doesn't match required context, heavily penalize
+        if (!contextMatched) {
+          score = Math.floor(score * 0.1); // 90% penalty
+        }
+      }
+
+      // Slight penalty for generic prompts
+      if (prompt.text === 'Yes' || prompt.text === 'No' || prompt.text === 'Not really' || prompt.text === 'Sort of') {
+        score = Math.floor(score * 0.01); // Only show if nothing else matches
+      }
 
       return { ...prompt, score };
     }).filter(m => m.score > 0);
@@ -234,9 +251,9 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
     console.log('Top 10 Matches:', scoredMatches.slice(0, 10).map(m => ({
       text: m.text,
       score: m.score,
-      depth: m.depth,
       category: m.category,
-      patterns: m.questionPatterns
+      patterns: m.questionPatterns,
+      followsResponse: m.followsUserResponse
     })));
 
     // Take top 4 suggestions
@@ -269,40 +286,3 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
     </div>
   );
 };
-
-// Analyze conversation history to understand what topics have been discussed and depth level
-function analyzeConversationState(messages: Message[]): {
-  topicsDiscussed: Set<string>;
-  depthByCategory: Map<string, number>;
-} {
-  const topicsDiscussed = new Set<string>();
-  const depthByCategory = new Map<string, number>();
-
-  // Look at last 10 messages to understand context
-  const recentMessages = messages.slice(-10);
-
-  // Track which categories have been mentioned
-  const categories = ['exercise', 'reading', 'entertainment', 'work', 'karen', 'sydney', 'daxton', 'gratitude', 'goals'];
-
-  categories.forEach(category => {
-    let mentionCount = 0;
-    recentMessages.forEach(msg => {
-      const contentLower = msg.content.toLowerCase();
-      if (contentLower.includes(category)) {
-        mentionCount++;
-      }
-    });
-
-    if (mentionCount > 0) {
-      topicsDiscussed.add(category);
-      // More mentions = deeper into the topic
-      // 1 mention = depth 1 (initial question)
-      // 2-3 mentions = depth 2 (follow-up)
-      // 4+ mentions = depth 3 (deep reflection)
-      const depth = mentionCount === 1 ? 1 : mentionCount <= 3 ? 2 : 3;
-      depthByCategory.set(category, depth);
-    }
-  });
-
-  return { topicsDiscussed, depthByCategory };
-}
