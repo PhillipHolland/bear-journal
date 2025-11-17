@@ -144,22 +144,18 @@ const PROMPT_LIBRARY: PromptSuggestion[] = [
   { text: 'Need to refocus', questionPatterns: ['progress on', 'any goals', 'focus on tomorrow'], category: 'goals' },
 
   // === SIGNIFICANT MOMENTS ===
-  { text: 'A conversation that stood out', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
-  { text: 'Something unexpected', questionPatterns: ['most significant', 'what stood out today', 'anything surprise'], category: 'moments' },
-  { text: 'A small victory', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
-  { text: 'Nothing major', questionPatterns: ['most significant', 'what stood out today'], category: 'moments' },
+  { text: 'A conversation that stood out', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'what was most'], category: 'moments' },
+  { text: 'Something unexpected', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'anything surprise', 'what was most'], category: 'moments' },
+  { text: 'A small victory', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'what was most'], category: 'moments' },
+  { text: 'Quality time with family', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'what was most'], category: 'moments' },
+  { text: 'A moment of peace', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'what was most'], category: 'moments' },
+  { text: 'Nothing major', questionPatterns: ['most significant', 'what stood out', 'stood out most', 'what was most'], category: 'moments' },
 
   // === CHALLENGES ===
   { text: 'A difficult situation', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
   { text: 'Work pressure', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
   { text: 'Time management', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
   { text: 'No major challenges', questionPatterns: ['any challenges', 'anything difficult'], category: 'challenges' },
-
-  // === GENERIC (Last resort) ===
-  { text: 'Yes', questionPatterns: ['?'] },
-  { text: 'No', questionPatterns: ['?'] },
-  { text: 'Not really', questionPatterns: ['?'] },
-  { text: 'Sort of', questionPatterns: ['?'] },
 ];
 
 interface Message {
@@ -231,11 +227,6 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
         }
       }
 
-      // Slight penalty for generic prompts
-      if (prompt.text === 'Yes' || prompt.text === 'No' || prompt.text === 'Not really' || prompt.text === 'Sort of') {
-        score = Math.floor(score * 0.01); // Only show if nothing else matches
-      }
-
       return { ...prompt, score };
     }).filter(m => m.score > 0);
 
@@ -256,17 +247,8 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
       followsResponse: m.followsUserResponse
     })));
 
-    // Filter out generic prompts if we have enough quality matches
-    const genericPrompts = ['Yes', 'No', 'Not really', 'Sort of'];
-    const qualityMatches = scoredMatches.filter(m => !genericPrompts.includes(m.text));
-
-    // Only use generic prompts if we have fewer than 2 quality matches
-    const finalMatches = qualityMatches.length >= 2
-      ? qualityMatches
-      : scoredMatches;
-
     // Take top 4 suggestions
-    const topSuggestions = finalMatches
+    const topSuggestions = scoredMatches
       .slice(0, 4)
       .map(m => m.text);
 
