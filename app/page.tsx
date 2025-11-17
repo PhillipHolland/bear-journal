@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { BearIcon, CopyIcon, ShareIcon, CheckIcon, PlusIcon, SendIcon } from '@/components/Icons';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,16 +20,16 @@ const CopyButton = ({ content }: { content: string }) => {
   return (
     <button
       onClick={handleCopy}
-      className="mt-3 px-3 py-1.5 text-sm font-medium text-[#e03e2f] hover:bg-white/50 dark:hover:bg-black/20 rounded-lg transition-colors flex items-center gap-2"
+      className="mt-4 px-4 py-2.5 text-sm font-medium text-[#e03e2f] hover:bg-white dark:hover:bg-[#222222] rounded-xl transition-all flex items-center gap-2 button-press smooth-shadow border border-[#e5e5e5] dark:border-[#2a2a2a]"
     >
       {copied ? (
         <>
-          <span>✓</span>
+          <CheckIcon className="w-4 h-4" />
           <span>Copied!</span>
         </>
       ) : (
         <>
-          <span>📋</span>
+          <CopyIcon className="w-4 h-4" />
           <span>Copy</span>
         </>
       )}
@@ -50,12 +51,10 @@ const ShareButton = ({ content }: { content: string }) => {
         setTimeout(() => setShared(false), 2000);
       }
     } catch (error) {
-      // User cancelled or error occurred
       console.log('Share cancelled or failed:', error);
     }
   };
 
-  // Only show share button if Web Share API is available (iOS Safari, modern browsers)
   if (!navigator.share) {
     return null;
   }
@@ -63,16 +62,16 @@ const ShareButton = ({ content }: { content: string }) => {
   return (
     <button
       onClick={handleShare}
-      className="mt-3 px-3 py-1.5 text-sm font-medium text-[#e03e2f] hover:bg-white/50 dark:hover:bg-black/20 rounded-lg transition-colors flex items-center gap-2"
+      className="mt-4 px-4 py-2.5 text-sm font-medium text-[#e03e2f] hover:bg-white dark:hover:bg-[#222222] rounded-xl transition-all flex items-center gap-2 button-press smooth-shadow border border-[#e5e5e5] dark:border-[#2a2a2a]"
     >
       {shared ? (
         <>
-          <span>✓</span>
+          <CheckIcon className="w-4 h-4" />
           <span>Shared!</span>
         </>
       ) : (
         <>
-          <span>📤</span>
+          <ShareIcon className="w-4 h-4" />
           <span>Share</span>
         </>
       )}
@@ -163,31 +162,32 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-[#1a1a1a]">
-      {/* Header */}
-      <header className="border-b border-[#e5e5e5] dark:border-[#3a3a3a] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#e03e2f] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">🐻</span>
+    <div className="flex flex-col h-screen bg-[#fafafa] dark:bg-[#0f0f0f]">
+      {/* Header with glassmorphism */}
+      <header className="glass dark:glass-dark px-8 py-5 flex items-center justify-between sticky top-0 z-10 smooth-shadow">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#e03e2f] to-[#c73527] rounded-2xl flex items-center justify-center smooth-shadow-lg transform hover:scale-105 transition-transform">
+            <BearIcon className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-xl font-semibold text-[#1a1a1a] dark:text-[#f5f5f5]">
+          <h1 className="text-2xl font-bold text-[#1a1a1a] dark:text-[#f5f5f5] tracking-tight">
             Bear Journal
           </h1>
         </div>
         {messages.length > 1 && (
           <button
             onClick={startNewEntry}
-            className="px-4 py-2 text-sm font-medium text-[#e03e2f] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] rounded-lg transition-colors"
+            className="px-5 py-2.5 text-sm font-semibold text-[#e03e2f] hover:bg-white dark:hover:bg-[#1a1a1a] rounded-xl transition-all button-press flex items-center gap-2 border border-[#e5e5e5] dark:border-[#2a2a2a]"
           >
-            New Entry
+            <PlusIcon className="w-4 h-4" />
+            <span>New Entry</span>
           </button>
         )}
       </header>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="space-y-6">
+      {/* Messages with improved spacing */}
+      <div className="flex-1 overflow-y-auto px-8 py-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-8">
               {messages.map((message, index) => {
                 const isJournalEntry = message.role === 'assistant' &&
                   (message.content.includes('# ') || message.content.includes('## ') ||
@@ -198,28 +198,38 @@ export default function Home() {
                     key={index}
                     className={`${
                       message.role === 'user'
-                        ? 'ml-auto bg-[#e03e2f] text-white'
-                        : 'mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-[#f5f5f5]'
-                    } max-w-[80%] rounded-2xl px-5 py-3`}
+                        ? 'ml-auto animate-fade-in-up'
+                        : 'mr-auto animate-fade-in-up'
+                    } max-w-[85%]`}
                   >
-                    <div className="whitespace-pre-wrap break-words">
-                      {message.content}
-                    </div>
-                    {isJournalEntry && (
-                      <div className="flex gap-2">
-                        <CopyButton content={message.content} />
-                        <ShareButton content={message.content} />
+                    <div
+                      className={`${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-br from-[#e03e2f] to-[#c73527] text-white'
+                          : 'bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-[#f5f5f5] border border-[#e5e5e5] dark:border-[#2a2a2a]'
+                      } rounded-2xl px-6 py-4 smooth-shadow`}
+                    >
+                      <div className="whitespace-pre-wrap break-words leading-relaxed text-base">
+                        {message.content}
                       </div>
-                    )}
+                      {isJournalEntry && (
+                        <div className="flex gap-3 mt-2">
+                          <CopyButton content={message.content} />
+                          <ShareButton content={message.content} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
               {isLoading && (
-                <div className="mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] max-w-[80%] rounded-2xl px-5 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '0.8s' }}></div>
-                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.15s', animationDuration: '0.8s' }}></div>
-                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.3s', animationDuration: '0.8s' }}></div>
+                <div className="mr-auto max-w-[85%] animate-fade-in-up">
+                  <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl px-6 py-5 smooth-shadow border border-[#e5e5e5] dark:border-[#2a2a2a]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-[#e03e2f] rounded-full animate-bounce"></div>
+                      <div className="w-3 h-3 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                      <div className="w-3 h-3 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -228,24 +238,26 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Input */}
-      <div className="border-t border-[#e5e5e5] dark:border-[#3a3a3a] px-6 py-4">
-        <form onSubmit={sendMessage} className="max-w-3xl mx-auto">
-          <div className="flex gap-3">
+      {/* Input with improved design */}
+      <div className="glass dark:glass-dark px-8 py-6 border-t border-[#e5e5e5] dark:border-[#2a2a2a]">
+        <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
+          <div className="flex gap-4">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your response..."
-              className="flex-1 px-4 py-3 bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-[#f5f5f5] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#e03e2f] placeholder-[#999]"
+              className="flex-1 px-6 py-4 bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-[#f5f5f5] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e03e2f] placeholder-[#999] text-base smooth-shadow border border-[#e5e5e5] dark:border-[#2a2a2a] transition-all"
               disabled={isLoading}
+              autoFocus
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-6 py-3 bg-[#e03e2f] text-white rounded-xl font-medium hover:bg-[#c73527] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-8 py-4 bg-gradient-to-br from-[#e03e2f] to-[#c73527] text-white rounded-2xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all button-press smooth-shadow-lg flex items-center gap-2 min-w-[120px] justify-center"
             >
-              Send
+              <SendIcon className="w-5 h-5" />
+              <span>Send</span>
             </button>
           </div>
         </form>
