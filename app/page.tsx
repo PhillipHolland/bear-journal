@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { BearIcon, CopyIcon, ShareIcon, CheckIcon, PlusIcon, SendIcon } from '@/components/Icons';
+import { PromptHelper } from '@/components/PromptHelper';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -161,6 +162,17 @@ export default function Home() {
     setInput('');
   };
 
+  const handlePromptSelect = (promptText: string) => {
+    setInput(promptText);
+    // Optionally auto-send, but let's let them edit first
+  };
+
+  // Get the last assistant message for prompt suggestions
+  const lastAssistantMessage = messages
+    .slice()
+    .reverse()
+    .find(m => m.role === 'assistant')?.content || '';
+
   return (
     <div className="flex flex-col h-screen bg-[#fafafa] dark:bg-[#0f0f0f]">
       {/* Header with glassmorphism */}
@@ -241,6 +253,14 @@ export default function Home() {
       {/* Input with improved design */}
       <div className="glass dark:glass-dark px-8 py-6 border-t border-[#e5e5e5] dark:border-[#2a2a2a]">
         <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
+          {/* Prompt suggestions */}
+          {!isLoading && lastAssistantMessage && (
+            <PromptHelper
+              lastAssistantMessage={lastAssistantMessage}
+              onSelectPrompt={handlePromptSelect}
+            />
+          )}
+
           <div className="flex gap-4">
             <input
               type="text"
