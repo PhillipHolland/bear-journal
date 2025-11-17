@@ -234,7 +234,7 @@ export async function POST(req: NextRequest) {
       ...messages,
     ];
 
-    console.log('Calling Grok API with model: grok-beta');
+    console.log('Calling Grok API with model: grok-4-fast-reasoning');
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         messages: messagesWithSystem,
-        model: 'grok-beta',
+        model: 'grok-4-fast-reasoning',
         stream: false,
         temperature: 0.7,
       }),
