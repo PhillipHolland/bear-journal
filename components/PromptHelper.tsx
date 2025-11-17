@@ -40,10 +40,18 @@ const PROMPT_LIBRARY: PromptSuggestion[] = [
   { text: 'Yes, I read', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
   { text: 'No reading today', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
   { text: 'Finished a chapter', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
+  { text: 'About 30 minutes', category: 'reading', keywords: ['how long', 'for how long'], priority: 8 },
+  { text: 'Just a few pages', category: 'reading', keywords: ['how long', 'how much'], priority: 8 },
+  { text: '[Book title]', category: 'reading', keywords: ['what are you reading', 'what book'], priority: 7 },
+  { text: 'Great insights', category: 'reading', keywords: ['standout', 'insights', 'quotes'], priority: 7 },
+  { text: 'Nothing stood out', category: 'reading', keywords: ['standout', 'insights', 'quotes'], priority: 7 },
 
   // Entertainment responses
   { text: 'Yes, watched something', category: 'entertainment', keywords: ['watch anything', 'watch', 'movie', 'tv show'], priority: 9 },
   { text: 'No, nothing today', category: 'entertainment', keywords: ['watch anything', 'watch'], priority: 9 },
+  { text: '[Movie/show name]', category: 'entertainment', keywords: ['what did you watch', 'what movie'], priority: 7 },
+  { text: 'Really enjoyed it', category: 'entertainment', keywords: ['what did you think', 'thoughts'], priority: 7 },
+  { text: 'It was okay', category: 'entertainment', keywords: ['what did you think', 'thoughts'], priority: 7 },
 
   // Family responses (specific names)
   { text: 'Quality time together', category: 'karen', keywords: ['anything fun with karen', 'karen'], priority: 9 },
@@ -78,10 +86,11 @@ const PROMPT_LIBRARY: PromptSuggestion[] = [
 
 interface PromptHelperProps {
   lastAssistantMessage: string;
+  lastUserMessage?: string;
   onSelectPrompt: (text: string) => void;
 }
 
-export const PromptHelper = ({ lastAssistantMessage, onSelectPrompt }: PromptHelperProps) => {
+export const PromptHelper = ({ lastAssistantMessage, lastUserMessage, onSelectPrompt }: PromptHelperProps) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -89,20 +98,42 @@ export const PromptHelper = ({ lastAssistantMessage, onSelectPrompt }: PromptHel
     const hour = new Date().getHours();
     const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'any' : 'evening';
 
-    // Convert message to lowercase for matching
+    // Convert messages to lowercase for matching
     const messageLower = lastAssistantMessage.toLowerCase();
+    const userMessageLower = lastUserMessage?.toLowerCase() || '';
+
+    // Detect context from user's last response
+    let contextCategory: string | null = null;
+    if (userMessageLower.includes('read') || userMessageLower.includes('book') || userMessageLower.includes('chapter')) {
+      contextCategory = 'reading';
+    } else if (userMessageLower.includes('exercise') || userMessageLower.includes('workout') || userMessageLower.includes('gym')) {
+      contextCategory = 'exercise';
+    } else if (userMessageLower.includes('work')) {
+      contextCategory = 'work';
+    } else if (userMessageLower.includes('karen')) {
+      contextCategory = 'karen';
+    } else if (userMessageLower.includes('sydney')) {
+      contextCategory = 'sydney';
+    } else if (userMessageLower.includes('daxton')) {
+      contextCategory = 'daxton';
+    }
 
     // Find matching suggestions with scores
     const scoredMatches = PROMPT_LIBRARY.map(prompt => {
       let score = 0;
 
-      // Check if any keyword matches the message
+      // Check if any keyword matches the AI's message
       prompt.keywords.forEach(keyword => {
         if (messageLower.includes(keyword.toLowerCase())) {
           // Longer keywords = more specific = higher score
           score += keyword.length + (prompt.priority || 0) * 10;
         }
       });
+
+      // Context boost - if user just talked about this category, boost related prompts
+      if (contextCategory && prompt.category === contextCategory) {
+        score += 50; // Strong boost for context continuity
+      }
 
       // Time of day bonus
       if (prompt.timeOfDay === timeOfDay) {
@@ -139,7 +170,7 @@ export const PromptHelper = ({ lastAssistantMessage, onSelectPrompt }: PromptHel
     }).slice(0, 4);
 
     setSuggestions(finalMatches);
-  }, [lastAssistantMessage]);
+  }, [lastAssistantMessage, lastUserMessage]);
 
   if (suggestions.length === 0) {
     return null;

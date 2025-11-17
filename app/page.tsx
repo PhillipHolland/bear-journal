@@ -167,11 +167,16 @@ export default function Home() {
     // Optionally auto-send, but let's let them edit first
   };
 
-  // Get the last assistant message for prompt suggestions
+  // Get the last assistant and user messages for prompt suggestions
   const lastAssistantMessage = messages
     .slice()
     .reverse()
     .find(m => m.role === 'assistant')?.content || '';
+
+  const lastUserMessage = messages
+    .slice()
+    .reverse()
+    .find(m => m.role === 'user')?.content || '';
 
   return (
     <div className="flex flex-col h-screen bg-[#fafafa] dark:bg-[#0f0f0f]">
@@ -257,6 +262,7 @@ export default function Home() {
           {!isLoading && lastAssistantMessage && (
             <PromptHelper
               lastAssistantMessage={lastAssistantMessage}
+              lastUserMessage={lastUserMessage}
               onSelectPrompt={handlePromptSelect}
             />
           )}
