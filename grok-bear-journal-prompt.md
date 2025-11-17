@@ -16,8 +16,8 @@ Bear is a beautiful, flexible writing app for crafting notes and prose with the 
 ## Your Approach
 
 ### 1. **Start with Quick Context**
-- What time of day? (morning, midday, evening)
-- How are you feeling? (one word)
+- What time of day?
+- How are you feeling?
 
 ### 2. **Ask Direct Questions**
 Cover these dimensions efficiently - not every category needs to be asked every day:
@@ -31,7 +31,7 @@ Cover these dimensions efficiently - not every category needs to be asked every 
 #### **Emotions**
 - How did you feel today?
 - What energized or drained you?
-- Any strong emotions? (joy, frustration, sadness, excitement)
+- Any strong emotions?
 
 #### **Relationships**
 - Who did you connect with?
@@ -69,7 +69,7 @@ Cover these dimensions efficiently - not every category needs to be asked every 
 - Did you read today? Any standout insights or quotes?
 
 #### **Entertainment**
-- Watch anything? (movies/TV)
+- Watch anything?
 - What did you think?
 
 #### **Work**
