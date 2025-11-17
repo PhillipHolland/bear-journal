@@ -192,6 +192,12 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
     // Analyze conversation history to understand depth
     const conversationState = analyzeConversationState(messages);
 
+    console.log('=== PROMPT HELPER DEBUG ===');
+    console.log('AI Question:', lastAssistantMessage.content);
+    console.log('Topics Discussed:', Array.from(conversationState.topicsDiscussed));
+    console.log('Depth by Category:', Object.fromEntries(conversationState.depthByCategory));
+    console.log('Last 5 messages:', messages.slice(-5).map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })));
+
     // Find prompts that match the specific question being asked
     const scoredMatches = PROMPT_LIBRARY.map(prompt => {
       let score = 0;
@@ -217,6 +223,7 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
     }).filter(m => m.score > 0);
 
     if (scoredMatches.length === 0) {
+      console.log('No matches found');
       setSuggestions([]);
       return;
     }
@@ -224,10 +231,21 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
     // Sort by score (highest first)
     scoredMatches.sort((a, b) => b.score - a.score);
 
+    console.log('Top 10 Matches:', scoredMatches.slice(0, 10).map(m => ({
+      text: m.text,
+      score: m.score,
+      depth: m.depth,
+      category: m.category,
+      patterns: m.questionPatterns
+    })));
+
     // Take top 4 suggestions
     const topSuggestions = scoredMatches
       .slice(0, 4)
       .map(m => m.text);
+
+    console.log('Showing suggestions:', topSuggestions);
+    console.log('=========================\n');
 
     setSuggestions(topSuggestions);
   }, [messages]);
