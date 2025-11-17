@@ -256,8 +256,17 @@ export const PromptHelper = ({ messages, onSelectPrompt }: PromptHelperProps) =>
       followsResponse: m.followsUserResponse
     })));
 
+    // Filter out generic prompts if we have enough quality matches
+    const genericPrompts = ['Yes', 'No', 'Not really', 'Sort of'];
+    const qualityMatches = scoredMatches.filter(m => !genericPrompts.includes(m.text));
+
+    // Only use generic prompts if we have fewer than 2 quality matches
+    const finalMatches = qualityMatches.length >= 2
+      ? qualityMatches
+      : scoredMatches;
+
     // Take top 4 suggestions
-    const topSuggestions = scoredMatches
+    const topSuggestions = finalMatches
       .slice(0, 4)
       .map(m => m.text);
 
