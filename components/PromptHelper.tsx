@@ -2,63 +2,78 @@ import { useEffect, useState } from 'react';
 
 interface PromptSuggestion {
   text: string;
+  category: string;
   keywords: string[];
   timeOfDay?: 'morning' | 'evening' | 'any';
+  priority?: number; // Higher = more specific
 }
 
 const PROMPT_LIBRARY: PromptSuggestion[] = [
-  // Time-based initial responses
-  { text: 'Morning', keywords: ['time of day', 'morning, midday, or evening'], timeOfDay: 'morning' },
-  { text: 'Midday', keywords: ['time of day', 'morning, midday, or evening'], timeOfDay: 'any' },
-  { text: 'Evening', keywords: ['time of day', 'morning, midday, or evening'], timeOfDay: 'evening' },
+  // Time-based initial responses (very specific)
+  { text: 'Morning', category: 'time', keywords: ['morning, midday, or evening', 'what time'], priority: 10, timeOfDay: 'morning' },
+  { text: 'Midday', category: 'time', keywords: ['morning, midday, or evening', 'what time'], priority: 10, timeOfDay: 'any' },
+  { text: 'Evening', category: 'time', keywords: ['morning, midday, or evening', 'what time'], priority: 10, timeOfDay: 'evening' },
 
-  // Feeling responses
-  { text: 'Energized', keywords: ['feeling', 'feel'] },
-  { text: 'Tired', keywords: ['feeling', 'feel'] },
-  { text: 'Calm', keywords: ['feeling', 'feel'] },
-  { text: 'Stressed', keywords: ['feeling', 'feel'] },
-  { text: 'Happy', keywords: ['feeling', 'feel'] },
-  { text: 'Neutral', keywords: ['feeling', 'feel'] },
+  // Feeling responses (specific)
+  { text: 'Energized', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
+  { text: 'Tired', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
+  { text: 'Calm', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
+  { text: 'Stressed', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
+  { text: 'Happy', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
+  { text: 'Neutral', category: 'feeling', keywords: ['how are you feeling', 'how do you feel', 'feeling'], priority: 8 },
 
   // Exercise responses
-  { text: 'Yes, I worked out', keywords: ['exercise', 'workout', 'physical activity'] },
-  { text: 'No, rest day', keywords: ['exercise', 'workout'] },
-  { text: 'Light activity', keywords: ['exercise', 'workout'] },
+  { text: 'Yes, I worked out', category: 'exercise', keywords: ['did you exercise', 'workout', 'exercise today'], priority: 9 },
+  { text: 'No, rest day', category: 'exercise', keywords: ['did you exercise', 'exercise today'], priority: 9 },
+  { text: 'Light activity', category: 'exercise', keywords: ['did you exercise', 'exercise today'], priority: 9 },
+  { text: 'Walking', category: 'exercise', keywords: ['what kind', 'exercise', 'workout'], priority: 7 },
+  { text: 'Gym workout', category: 'exercise', keywords: ['what kind', 'exercise', 'workout'], priority: 7 },
+  { text: 'Running', category: 'exercise', keywords: ['what kind', 'exercise', 'workout'], priority: 7 },
 
   // Work responses
-  { text: 'Great day at work', keywords: ['work', 'job', 'office'] },
-  { text: 'Challenging day', keywords: ['work', 'job', 'challenges'] },
-  { text: 'Productive day', keywords: ['work', 'accomplish'] },
-  { text: 'Normal day', keywords: ['work', 'job'] },
+  { text: 'Great day', category: 'work', keywords: ['how was work', 'work today'], priority: 9 },
+  { text: 'Challenging', category: 'work', keywords: ['how was work', 'work today'], priority: 9 },
+  { text: 'Productive', category: 'work', keywords: ['how was work', 'work today'], priority: 9 },
+  { text: 'Normal day', category: 'work', keywords: ['how was work', 'work today'], priority: 9 },
 
   // Reading responses
-  { text: 'Yes, read today', keywords: ['reading', 'read', 'book'] },
-  { text: 'No reading today', keywords: ['reading', 'read', 'book'] },
-  { text: 'Finished a chapter', keywords: ['reading', 'read', 'book'] },
+  { text: 'Yes, I read', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
+  { text: 'No reading today', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
+  { text: 'Finished a chapter', category: 'reading', keywords: ['did you read', 'read today'], priority: 9 },
 
   // Entertainment responses
-  { text: 'Yes, watched something', keywords: ['watch', 'movie', 'tv', 'entertainment'] },
-  { text: 'No, nothing today', keywords: ['watch', 'movie', 'tv', 'entertainment'] },
+  { text: 'Yes, watched something', category: 'entertainment', keywords: ['watch anything', 'watch', 'movie', 'tv show'], priority: 9 },
+  { text: 'No, nothing today', category: 'entertainment', keywords: ['watch anything', 'watch'], priority: 9 },
 
-  // Family responses
-  { text: 'Quality time together', keywords: ['karen', 'wife', 'sydney', 'daxton', 'family'] },
-  { text: 'Nothing special', keywords: ['karen', 'sydney', 'daxton'] },
-  { text: 'Had a great moment', keywords: ['karen', 'sydney', 'daxton', 'family'] },
+  // Family responses (specific names)
+  { text: 'Quality time together', category: 'karen', keywords: ['anything fun with karen', 'karen'], priority: 9 },
+  { text: 'Nothing special', category: 'karen', keywords: ['anything fun with karen', 'karen'], priority: 9 },
+  { text: 'Had a sweet moment', category: 'karen', keywords: ['special moments', 'karen'], priority: 8 },
+
+  { text: 'Played together', category: 'sydney', keywords: ['with sydney', 'sydney'], priority: 9 },
+  { text: 'Nothing today', category: 'sydney', keywords: ['with sydney', 'sydney'], priority: 9 },
+  { text: 'She made me laugh', category: 'sydney', keywords: ['funny', 'sweet moments', 'sydney'], priority: 8 },
+
+  { text: 'Hung out together', category: 'daxton', keywords: ['with daxton', 'daxton'], priority: 9 },
+  { text: 'Nothing today', category: 'daxton', keywords: ['with daxton', 'daxton'], priority: 9 },
+  { text: 'He made me smile', category: 'daxton', keywords: ['funny', 'sweet moments', 'daxton'], priority: 8 },
 
   // Gratitude responses
-  { text: 'My family', keywords: ['grateful', 'gratitude', 'appreciate'] },
-  { text: 'My health', keywords: ['grateful', 'gratitude'] },
-  { text: 'Small moments', keywords: ['grateful', 'gratitude', 'pleasures'] },
+  { text: 'My family', category: 'gratitude', keywords: ['grateful for', 'gratitude'], priority: 8 },
+  { text: 'My health', category: 'gratitude', keywords: ['grateful for', 'gratitude'], priority: 8 },
+  { text: 'Small moments', category: 'gratitude', keywords: ['grateful for', 'small pleasures'], priority: 8 },
+  { text: 'Today went well', category: 'gratitude', keywords: ['grateful for', 'gratitude'], priority: 7 },
 
   // Goals responses
-  { text: 'Made progress', keywords: ['goals', 'progress', 'focus'] },
-  { text: 'Stayed consistent', keywords: ['goals', 'progress'] },
-  { text: 'Need to improve', keywords: ['goals', 'focus', 'tomorrow'] },
+  { text: 'Made progress', category: 'goals', keywords: ['progress on', 'goals'], priority: 8 },
+  { text: 'Stayed consistent', category: 'goals', keywords: ['progress on', 'goals'], priority: 8 },
+  { text: 'Need to refocus', category: 'goals', keywords: ['focus on tomorrow', 'goals'], priority: 7 },
 
-  // General positive responses
-  { text: 'Yes', keywords: ['did you', 'have you', 'any'] },
-  { text: 'No', keywords: ['did you', 'have you', 'any'] },
-  { text: 'Not really', keywords: ['did you', 'have you', 'any'] },
+  // Generic yes/no (low priority, last resort)
+  { text: 'Yes', category: 'generic', keywords: ['did you', 'have you', 'any'], priority: 1 },
+  { text: 'No', category: 'generic', keywords: ['did you', 'have you', 'any'], priority: 1 },
+  { text: 'Not really', category: 'generic', keywords: ['did you', 'have you', 'any'], priority: 1 },
+  { text: 'Sort of', category: 'generic', keywords: ['did you', 'have you', 'any'], priority: 1 },
 ];
 
 interface PromptHelperProps {
@@ -77,30 +92,53 @@ export const PromptHelper = ({ lastAssistantMessage, onSelectPrompt }: PromptHel
     // Convert message to lowercase for matching
     const messageLower = lastAssistantMessage.toLowerCase();
 
-    // Find matching suggestions
-    const matches = PROMPT_LIBRARY.filter(prompt => {
+    // Find matching suggestions with scores
+    const scoredMatches = PROMPT_LIBRARY.map(prompt => {
+      let score = 0;
+
       // Check if any keyword matches the message
-      const keywordMatch = prompt.keywords.some(keyword =>
-        messageLower.includes(keyword.toLowerCase())
-      );
+      prompt.keywords.forEach(keyword => {
+        if (messageLower.includes(keyword.toLowerCase())) {
+          // Longer keywords = more specific = higher score
+          score += keyword.length + (prompt.priority || 0) * 10;
+        }
+      });
 
-      // Check time of day relevance
-      const timeMatch = !prompt.timeOfDay || prompt.timeOfDay === timeOfDay || prompt.timeOfDay === 'any';
+      // Time of day bonus
+      if (prompt.timeOfDay === timeOfDay) {
+        score += 5;
+      }
 
-      return keywordMatch && timeMatch;
-    });
+      return { ...prompt, score };
+    }).filter(m => m.score > 0);
 
-    // Take top 4 matches, prioritize time-specific ones
-    const topMatches = matches
-      .sort((a, b) => {
-        if (a.timeOfDay && !b.timeOfDay) return -1;
-        if (!a.timeOfDay && b.timeOfDay) return 1;
-        return 0;
-      })
+    if (scoredMatches.length === 0) {
+      setSuggestions([]);
+      return;
+    }
+
+    // Sort by score (highest first)
+    scoredMatches.sort((a, b) => b.score - a.score);
+
+    // Get the top category (highest scoring)
+    const topCategory = scoredMatches[0].category;
+
+    // Only show suggestions from the top category (or generic as fallback)
+    const categoryMatches = scoredMatches
+      .filter(m => m.category === topCategory || (topCategory === 'generic' ? true : m.category === 'generic'))
       .slice(0, 4)
       .map(m => m.text);
 
-    setSuggestions(topMatches);
+    // If we have matches from the main category, exclude generic
+    const finalMatches = categoryMatches.filter((text, idx, arr) => {
+      if (topCategory !== 'generic') {
+        const item = scoredMatches.find(m => m.text === text);
+        return item?.category !== 'generic';
+      }
+      return true;
+    }).slice(0, 4);
+
+    setSuggestions(finalMatches);
   }, [lastAssistantMessage]);
 
   if (suggestions.length === 0) {
