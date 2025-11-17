@@ -8,7 +8,12 @@ interface Message {
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: 'Ready to journal? Morning, midday, or evening?',
+    },
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -75,7 +80,12 @@ export default function Home() {
   };
 
   const startNewEntry = () => {
-    setMessages([]);
+    setMessages([
+      {
+        role: 'assistant',
+        content: 'Ready to journal? Morning, midday, or evening?',
+      },
+    ]);
     setInput('');
   };
 
@@ -91,7 +101,7 @@ export default function Home() {
             Bear Journal
           </h1>
         </div>
-        {messages.length > 0 && (
+        {messages.length > 1 && (
           <button
             onClick={startNewEntry}
             className="px-4 py-2 text-sm font-medium text-[#e03e2f] hover:bg-[#f5f5f5] dark:hover:bg-[#2a2a2a] rounded-lg transition-colors"
@@ -104,21 +114,7 @@ export default function Home() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-3xl mx-auto">
-          {messages.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🐻</div>
-              <h2 className="text-2xl font-semibold mb-2 text-[#1a1a1a] dark:text-[#f5f5f5]">
-                Ready to journal?
-              </h2>
-              <p className="text-[#666] dark:text-[#999]">
-                I'll help you create a comprehensive daily journal entry.
-              </p>
-              <p className="text-[#666] dark:text-[#999] mt-2">
-                Just start typing below to begin.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
+          <div className="space-y-6">
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -144,7 +140,6 @@ export default function Home() {
               )}
               <div ref={messagesEndRef} />
             </div>
-          )}
         </div>
       </div>
 
