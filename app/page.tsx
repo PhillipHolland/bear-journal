@@ -42,10 +42,17 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json();
+        console.error('API error:', errorData);
+        throw new Error(errorData.error || 'Failed to get response');
       }
 
       const data = await response.json();
+
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response from API');
+      }
+
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.choices[0].message.content,
@@ -54,11 +61,12 @@ export default function Home() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Sorry, there was an error processing your request.',
+          content: `Error: ${errorMessage}\n\nPlease make sure the GROK_API_KEY is set in your Vercel environment variables.`,
         },
       ]);
     } finally {

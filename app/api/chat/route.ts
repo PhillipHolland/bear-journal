@@ -212,6 +212,7 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
+      console.error('Invalid messages array');
       return NextResponse.json(
         { error: 'Messages array is required' },
         { status: 400 }
@@ -220,8 +221,9 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GROK_API_KEY;
     if (!apiKey) {
+      console.error('GROK_API_KEY environment variable is not set');
       return NextResponse.json(
-        { error: 'API key not configured' },
+        { error: 'API key not configured. Please set GROK_API_KEY in Vercel environment variables.' },
         { status: 500 }
       );
     }
@@ -232,6 +234,8 @@ export async function POST(req: NextRequest) {
       ...messages,
     ];
 
+    console.log('Calling Grok API with model: grok-beta');
+
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -240,27 +244,40 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         messages: messagesWithSystem,
-        model: 'grok-2-1212',
+        model: 'grok-beta',
         stream: false,
         temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Grok API error:', error);
+      const errorText = await response.text();
+      console.error('Grok API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
       return NextResponse.json(
-        { error: 'Failed to get response from Grok' },
+        {
+          error: 'Failed to get response from Grok',
+          details: errorText,
+          status: response.status
+        },
         { status: response.status }
       );
     }
 
     const data = await response.json();
+    console.log('Grok API success');
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error in chat API:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: errorMessage
+      },
       { status: 500 }
     );
   }
