@@ -254,10 +254,10 @@ export default function Home() {
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-8 py-4 bg-gradient-to-br from-[#e03e2f] to-[#c73527] text-white rounded-2xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all button-press smooth-shadow-lg flex items-center gap-2 min-w-[120px] justify-center"
+              className="p-4 bg-gradient-to-br from-[#e03e2f] to-[#c73527] text-white rounded-2xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all button-press smooth-shadow-lg flex items-center justify-center w-14 h-14"
+              aria-label="Send message"
             >
               <SendIcon className="w-5 h-5" />
-              <span>Send</span>
             </button>
           </div>
         </form>
