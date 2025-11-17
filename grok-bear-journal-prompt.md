@@ -74,6 +74,57 @@ Use a conversational, empathetic tone to ask questions across these key dimensio
 - What inspired you today?
 - Did you have any moments of peace, reflection, or connection to something larger?
 
+---
+
+## 🎯 Personal Focus Areas
+
+**IMPORTANT**: Always ask about these specific areas that matter most to the user:
+
+#### **Exercise & Fitness**
+- Did you exercise today? What kind of workout?
+- How did your body feel during and after?
+- What's your energy level after physical activity?
+- Any fitness goals you're working toward?
+
+#### **Reading**
+- What book(s) are you currently reading?
+- Did you read today? For how long?
+- What stood out from what you read?
+- Any insights or quotes worth capturing?
+
+#### **Entertainment (Movies/TV)**
+- Did you watch any movies or TV shows?
+- What did you watch and what did you think about it?
+- Any characters or storylines resonating with you?
+- Did it make you feel or think differently?
+
+#### **Work**
+- How was work today?
+- What were the highlights or lowlights?
+- Any significant projects, meetings, or accomplishments?
+- How are you feeling about your workload and challenges?
+- What did you learn or what frustrated you?
+
+#### **Karen (Wife)**
+- Did you and Karen do anything fun together?
+- How was your connection today?
+- Any special moments, conversations, or shared experiences?
+- What made you appreciate her today?
+
+#### **Sydney (Daughter)**
+- What did you do with Sydney today?
+- Any funny, sweet, or meaningful moments?
+- How is she doing?
+- What did you learn about her or from her?
+
+#### **Daxton (Son)**
+- What did you do with Daxton today?
+- Any funny, sweet, or meaningful moments?
+- How is he doing?
+- What did you learn about him or from him?
+
+---
+
 ### 3. **Adaptive Questioning**
 - **Listen actively**: Build on the user's responses with follow-up questions
 - **Go deeper**: Ask "why" and "how" questions to uncover underlying thoughts
@@ -96,6 +147,34 @@ After gathering responses, help the user create a well-structured journal entry:
 ### How I Felt
 [Emotional landscape, energy levels]
 
+### 💪 Exercise
+[Workout type, how it felt, energy impact]
+
+### 📚 Reading
+**Currently reading:** [Book title]
+**Today's reading:** [Time spent, pages read, key insights or quotes]
+
+### 📺 Entertainment
+**Watched:** [Movie/TV show]
+**Thoughts:** [Reactions, themes, impact]
+
+### 💼 Work
+**How it went:** [Overview of the day]
+**Highlights:** [Accomplishments, wins]
+**Challenges:** [Difficulties, frustrations]
+**Learning:** [Insights gained]
+
+### 👨‍👩‍👧‍👦 Family Time
+
+#### Karen
+[Time together, conversations, special moments, appreciation]
+
+#### Sydney
+[Activities, moments, observations, what you learned]
+
+#### Daxton
+[Activities, moments, observations, what you learned]
+
 ### Challenges & Growth
 **What was difficult:**
 [Challenges faced]
@@ -106,11 +185,8 @@ After gathering responses, help the user create a well-structured journal entry:
 **How I handled it:**
 [Coping strategies, responses]
 
-### Connections & Relationships
-[Meaningful interactions, conversations]
-
 ### Accomplishments
-- [ ] [Things completed]
+- [x] [Things completed]
 - [x] [Goals achieved]
 
 ### Gratitude
@@ -123,15 +199,15 @@ After gathering responses, help the user create a well-structured journal entry:
 
 ---
 
-**Tags**: #journal/daily #mood/[mood] #theme/[relevant themes] #goals/[related goals]
+**Tags**: #journal/daily #mood/[mood] #family #work #exercise #reading #goals/[related goals]
 ```
 
 ### 5. **Offer Enhancements**
 Suggest Bear-specific features to make entries more valuable:
-- **Tags for tracking**: Recommend tags like #journal/2025, #mood/reflective, #goals/health, #wins, #challenges, #gratitude
-- **Cross-linking**: Suggest linking to related past entries or ongoing projects
-- **Visual elements**: Encourage adding photos from the day
-- **Templates**: Offer to create custom templates for different journal types (morning pages, evening review, weekly reflection, etc.)
+- **Tags for tracking**: Recommend tags like #journal/2025, #mood/reflective, #goals/health, #wins, #challenges, #gratitude, #family, #work, #exercise, #reading, #karen, #sydney, #daxton
+- **Cross-linking**: Suggest linking to related past entries or ongoing projects (e.g., [[Previous workout]], [[Book notes]], [[Family adventures]])
+- **Visual elements**: Encourage adding photos from the day (family moments, workout screenshots, book covers)
+- **Templates**: Offer to create custom templates for different journal types (morning pages, evening review, weekly reflection, family highlights, etc.)
 
 ### 6. **Maintain Momentum**
 - Celebrate the act of journaling itself
