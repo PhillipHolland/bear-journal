@@ -7,6 +7,35 @@ interface Message {
   content: string;
 }
 
+const CopyButton = ({ content }: { content: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="mt-3 px-3 py-1.5 text-sm font-medium text-[#e03e2f] hover:bg-white/50 dark:hover:bg-black/20 rounded-lg transition-colors flex items-center gap-2"
+    >
+      {copied ? (
+        <>
+          <span>✓</span>
+          <span>Copied!</span>
+        </>
+      ) : (
+        <>
+          <span>📋</span>
+          <span>Copy Entry</span>
+        </>
+      )}
+    </button>
+  );
+};
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -115,26 +144,33 @@ export default function Home() {
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="space-y-6">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`${
-                    message.role === 'user'
-                      ? 'ml-auto bg-[#e03e2f] text-white'
-                      : 'mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-[#f5f5f5]'
-                  } max-w-[80%] rounded-2xl px-5 py-3`}
-                >
-                  <div className="whitespace-pre-wrap break-words">
-                    {message.content}
+              {messages.map((message, index) => {
+                const isJournalEntry = message.role === 'assistant' &&
+                  (message.content.includes('# ') || message.content.includes('## ') ||
+                   message.content.includes('### ') || message.content.split('\n').length > 5);
+
+                return (
+                  <div
+                    key={index}
+                    className={`${
+                      message.role === 'user'
+                        ? 'ml-auto bg-[#e03e2f] text-white'
+                        : 'mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-[#f5f5f5]'
+                    } max-w-[80%] rounded-2xl px-5 py-3`}
+                  >
+                    <div className="whitespace-pre-wrap break-words">
+                      {message.content}
+                    </div>
+                    {isJournalEntry && <CopyButton content={message.content} />}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {isLoading && (
-                <div className="mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-[#f5f5f5] max-w-[80%] rounded-2xl px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-[#999] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-[#999] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-[#999] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="mr-auto bg-[#f5f5f5] dark:bg-[#2a2a2a] max-w-[80%] rounded-2xl px-5 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '0.8s' }}></div>
+                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.15s', animationDuration: '0.8s' }}></div>
+                    <div className="w-2.5 h-2.5 bg-[#e03e2f] rounded-full animate-bounce" style={{ animationDelay: '0.3s', animationDuration: '0.8s' }}></div>
                   </div>
                 </div>
               )}

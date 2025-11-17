@@ -34,3 +34,18 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes smooth-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.7;
+  }
+}
+
+.animate-bounce {
+  animation: smooth-bounce 0.8s ease-in-out infinite;
+}
