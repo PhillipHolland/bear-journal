@@ -29,7 +29,51 @@ const CopyButton = ({ content }: { content: string }) => {
       ) : (
         <>
           <span>📋</span>
-          <span>Copy Entry</span>
+          <span>Copy</span>
+        </>
+      )}
+    </button>
+  );
+};
+
+const ShareButton = ({ content }: { content: string }) => {
+  const [shared, setShared] = useState(false);
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          text: content,
+          title: 'Journal Entry',
+        });
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      }
+    } catch (error) {
+      // User cancelled or error occurred
+      console.log('Share cancelled or failed:', error);
+    }
+  };
+
+  // Only show share button if Web Share API is available (iOS Safari, modern browsers)
+  if (!navigator.share) {
+    return null;
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="mt-3 px-3 py-1.5 text-sm font-medium text-[#e03e2f] hover:bg-white/50 dark:hover:bg-black/20 rounded-lg transition-colors flex items-center gap-2"
+    >
+      {shared ? (
+        <>
+          <span>✓</span>
+          <span>Shared!</span>
+        </>
+      ) : (
+        <>
+          <span>📤</span>
+          <span>Share</span>
         </>
       )}
     </button>
@@ -161,7 +205,12 @@ export default function Home() {
                     <div className="whitespace-pre-wrap break-words">
                       {message.content}
                     </div>
-                    {isJournalEntry && <CopyButton content={message.content} />}
+                    {isJournalEntry && (
+                      <div className="flex gap-2">
+                        <CopyButton content={message.content} />
+                        <ShareButton content={message.content} />
+                      </div>
+                    )}
                   </div>
                 );
               })}
